@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Infrastructure Intelligence | SentinelMail{% endblock %}
+{% block body %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .infra-page { min-height: 100vh; padding: 28px; background: #102a3b; color: #edf8f5; font: 13px Manrope, sans-serif; }
+  .infra-shell { max-width: 1280px; margin: 0 auto; }
+  .infra-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+  .infra-kicker { color: #74d5b5; font: 10px 'DM Mono', monospace; letter-spacing: 1.5px; }
+  .infra-header h1 { margin: 8px 0 5px; font-size: 30px; }
+  .infra-header p { margin: 0; color: #a9c1c1; }
+  .infra-back { color: #b9eff0; text-decoration: none; }
+  .infra-map-panel { overflow: hidden; border: 1px solid #2b5260; border-radius: 8px; background: #162c36; box-shadow: 0 20px 45px rgba(0,0,0,.2); }
+  #threat-map { height: calc(100vh - 190px); min-height: 480px; }
+  .offline-map { display: none; height: 100%; padding: 24px; box-sizing: border-box; background-color: #193b45; background-image: linear-gradient(rgba(116,213,181,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(116,213,181,.12) 1px, transparent 1px); background-size: 44px 44px; }
+  .offline-map.is-visible { display: block; }
+  .offline-map-title { color: #b9eff0; font: 11px 'DM Mono', monospace; letter-spacing: 1px; }
+  .offline-map-list { display: grid; gap: 8px; max-width: 420px; margin-top: 18px; }
+  .offline-map-point { display: grid; grid-template-columns: 10px 1fr auto; gap: 9px; align-items: center; padding: 10px 12px; border: 1px solid rgba(185,239,240,.2); border-radius: 5px; background: rgba(16,42,59,.72); color: #edf8f5; }
+  .offline-map-point i { width: 8px; height: 8px; border-radius: 50%; background: #e9ad4d; }
+  .offline-map-point i.critical { background: #e45d68; }
+  .offline-map-point small { color: #a9c1c1; }
+  .infra-origin-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 14px; }
+  .infra-origin-list article { display: grid; gap: 4px; padding: 12px; border: 1px solid #2b5260; border-radius: 6px; background: #162c36; }
+  .infra-origin-list span, .infra-origin-list b, .infra-origin-list p { color: #a9c1c1; font-size: 11px; }
+  .infra-origin-list b { color: #74d5b5; }
+  .leaflet-container { font: 11px Manrope, sans-serif; }
+  .map-popup { display: grid; gap: 6px; color: #162b38; }
+  .map-popup-address { padding: 6px 8px; border-radius: 4px; background: #e7f8f1; }
+  @media (max-width: 700px) { .infra-page { padding: 18px; } .infra-header { align-items: flex-start; flex-direction: column; } #threat-map { height: calc(100vh - 230px); min-height: 400px; } }
+</style>
+<div class="infra-page">
+  <div class="infra-shell">
+    <header class="infra-header">
+      <div><span class="infra-kicker">SENTINELMAIL / INFRASTRUCTURE INTELLIGENCE</span><h1>Origin signals</h1><p>Case risk mapped to the source address and available location enrichment.</p></div>
+      <a class="infra-back" href="{{ url_for('main.dashboard') }}">← Command center</a>
+    </header>
+    <section class="infra-map-panel" aria-label="Infrastructure intelligence map"><div id="threat-map"></div></section>
+    <section class="infra-origin-list" aria-label="Infrastructure origin details">
+      {% for point in map_points %}<article><strong>{{ point.city }}, {{ point.country }}</strong><span>{{ point.ip }}</span><b>{{ point.score }}/100 · {{ point.level }}</b></article>{% else %}<p>No source addresses have been analyzed yet.</p>{% endfor %}
+    </section>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>window.SENTINEL_DATA={points:{{ map_points|tojson }}};</script>
+<script src="{{ url_for('static', filename='js/advanced.js') }}"></script>
+{% endblock %}
